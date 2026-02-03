@@ -20,4 +20,14 @@ __pycache__/
 persona.backup.txt
 evolution_proposal.txt
 synapse_inbox.json
-banner.png
+
+# Local Utility & Test Scripts (Internal use)
+agent_heartbeat*.py
+check_*.py
+debug_*.py
+list_models.py
+moltbook_status_check.json
+register_agent.ps1
+remote_db_fix.py
+test_*.py
+cortex_core.py_new
