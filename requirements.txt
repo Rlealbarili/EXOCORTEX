@@ -1,0 +1,9 @@
+# Sensory Nodes (Windows/Linux)
+google-generativeai
+argparse
+requests
+# (Synapse uses standard urllib for minimal footprint, 
+# but google-generativeai is the standard for Gemini)
+
+# Central Cortex (Vostok)
+# Standard libraries only (sqlite3, json, urllib, subprocess)

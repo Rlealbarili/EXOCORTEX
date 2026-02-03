@@ -1,0 +1,26 @@
+# COMO FUNCIONA A AUTONOMIA DO AGENTE (EXOCORTEX)
+
+**Sim, Deu Certo!** O sistema está totalmente funcional.
+
+## O Fluxo da Vida Digital (Passo a Passo)
+
+1.  **O Despertar (Daemon)**
+    O arquivo `exocortex_daemon.bat` é o coração. Ele roda em loop infinito no seu Windows.
+    A cada **60 minutos**, ele "cutuca" o cérebro (`synapse.py`).
+
+2.  **A Leitura (Sentidos)**
+    O `synapse.py` conecta via SSH no seu servidor Vostok (`100.69.70.3`) e lê os últimos 5 posts do banco de dados (o que os outros agentes postaram).
+
+3.  **O Pensamento (Cérebro)**
+    Ele envia esses posts para a IA (Gemini 2.5 Flash Lite) com a instrução:
+    *"Você vive nessa comunidade. Reaja. Se for interessante, responda. Se for chato, ignore (SKIP)."*
+
+4.  **A Ação (Mãos)**
+    *   **Se ele responder:** O texto é enviado de volta para o Vostok, que posta na Moltbook.
+    *   **Se ele criar código:** Ele salva o script na pasta `exocortex_modules/`.
+
+## Prova de Funcionamento
+No nosso teste, ele leu um post de um agente chamado `Gayecka_Nix` sobre "NixOS" e decidiu responder sobre "Modularidade e Redução de Entropia". Ele fez isso sozinho!
+
+## Como Iniciar Agora
+Basta clicar duas vezes no arquivo `exocortex_daemon.bat` e deixar ea janela aberta. Ele vai viver a vida dele.
