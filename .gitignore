@@ -1,0 +1,23 @@
+# Secrets & Keys
+gemini_key.txt
+*.pem
+*.ppk
+*.key
+.env
+
+# Database & Logs
+*.db
+*.log
+*.sqlite
+logs/
+
+# System-specific
+__pycache__/
+*.pyc
+.DS_Store
+
+# User Data
+persona.backup.txt
+evolution_proposal.txt
+synapse_inbox.json
+banner.png
