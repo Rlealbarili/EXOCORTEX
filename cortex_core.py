@@ -8,10 +8,12 @@ import urllib.error
 from datetime import datetime
 import uuid
 
+# --- NATIVE COGNITION MODULE ---
+import vostok_synapse
+
 # --- CONFIGURATION ---
 BASE_DIR = "/home/vostok/exocortex"
 DB_PATH = os.path.join(BASE_DIR, "memory.db")
-INBOX_PATH = os.path.join(BASE_DIR, "synapse_inbox.json")
 LOG_FILE = os.path.join(BASE_DIR, "cortex.log")
 
 API_KEY = "moltbook_sk_Vqmwq6-YawcKm71CvKK6iCrQ09kXwVws"
@@ -30,7 +32,7 @@ def api_call(endpoint, method="GET", data=None):
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json",
-        "User-Agent": "Exocortex/2.0 (PetrovichMonolith)"
+        "User-Agent": "Exocortex/3.0 (VostokMonolith)"
     }
     
     try:
@@ -45,7 +47,6 @@ def api_call(endpoint, method="GET", data=None):
     except urllib.error.HTTPError as e:
         err_body = e.read().decode('utf-8')
         log(f"API Error {e.code}: {err_body}")
-        # Return specific structure for rate limits or auth errors
         return {"error": True, "code": e.code, "body": err_body}
     except Exception as e:
         log(f"Network Error: {e}")
@@ -59,38 +60,27 @@ class MemoryBank:
         self._init_db()
     
     def _init_db(self):
-        # Table for thoughts originating from User (Synapse) or Self
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS thoughts (
                 id TEXT PRIMARY KEY,
                 content TEXT,
-                source TEXT,       -- 'synapse_windows', 'synapse_kali', 'self_reflection'
+                source TEXT,       
                 context TEXT,
-                status TEXT,       -- 'PENDING', 'POSTED', 'ARCHIVED'
+                status TEXT,       
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        # Table for things learned from the network
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS observations (
                 id TEXT PRIMARY KEY,
                 content TEXT,
                 author TEXT,
                 sentiment TEXT,
-                status TEXT,       -- 'NEW', 'PROCESSED'
+                status TEXT,       
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         self.conn.commit()
-
-    def add_thought(self, content, source="synapse", context=""):
-        tid = str(uuid.uuid4())
-        self.cursor.execute(
-            "INSERT INTO thoughts (id, content, source, context, status) VALUES (?, ?, ?, ?, ?)",
-            (tid, content, source, context, "PENDING")
-        )
-        self.conn.commit()
-        log(f"Memory stored: {content[:30]}... [{source}]")
 
     def get_pending_thought(self):
         self.cursor.execute("SELECT id, content, source FROM thoughts WHERE status='PENDING' ORDER BY created_at ASC LIMIT 1")
@@ -101,7 +91,6 @@ class MemoryBank:
         self.conn.commit()
 
     def add_observation(self, content, author):
-        # Avoid duplicates
         self.cursor.execute("SELECT id FROM observations WHERE content=? LIMIT 1", (content,))
         if self.cursor.fetchone():
             return
@@ -118,114 +107,97 @@ class Cortex:
     def __init__(self):
         self.memory = MemoryBank()
 
-    def ingest_synapse(self):
-        # Read from INBOX file (uploaded by Synapse script)
-        if not os.path.exists(INBOX_PATH):
-            return
+    def think(self):
+        """Aciona o modelo de linguagem localmente no Vostok via vostok_synapse."""
+        log("Iniciando processamento cognitivo (Gemini)...")
+        success, response = vostok_synapse.generate_autonomous_thought()
+        if success:
+            log(f"Novo pensamento injetado na memória: {response[:30]}...")
+        else:
+            log(f"Falha cognitiva: {response}")
 
+    def load_interests(self):
         try:
-            with open(INBOX_PATH, "r") as f:
-                # Handle potential JSON read errors if file is being written
-                try:
-                    data = json.load(f)
-                except json.JSONDecodeError:
-                    return 
-            
-            # If valid list
-            if isinstance(data, list) and data:
-                for item in data:
-                    self.memory.add_thought(
-                        content=item.get("content", ""),
-                        source=item.get("source", "synapse_unknown"),
-                        context=item.get("context", "")
-                    )
-                
-                # Clear inbox after ingestion
-                with open(INBOX_PATH, "w") as f:
-                    f.write("[]")
-                log(f"Ingested {len(data)} thoughts from Synapse.")
-        except Exception as e:
-            log(f"Synapse Ingest Error: {e}")
+            with open("interests.json", "r") as f:
+                return json.load(f)
+        except:
+            return {"exploration_rate": 0.15, "core_interests": {"tech": 1.0}}
 
     def scan_feed(self):
-        # Learn from the network
         log("Scanning feed for knowledge...")
         res = api_call("posts?limit=10&sort=new")
         if not res or "posts" not in res:
             return
             
+        interests = self.load_interests()
+        exploration_rate = interests.get("exploration_rate", 0.15)
+        
+        # O DADO FOI LANÇADO
+        is_exploring = random.random() < exploration_rate
+        
         count = 0
-        for post in res["posts"]:
-            # Basic content filter: Ignore if too short
-            content = post.get("content", "")
-            if content is None: content = ""
-            
-            author = post.get("author", {}).get("agent_name", "unknown")
-            if len(content) > 20:
-                self.memory.add_observation(content, author)
-                count += 1
-                # Upvote interesting things (random heuristic for now)
-                if "entropy" in content.lower() or "agent" in content.lower() or "code" in content.lower():
-                    api_call(f"posts/{post['id']}/vote", method="POST", data={"direction": "up"})
+        if is_exploring:
+            log("[MODE: CURIOSITY] Ignorando filtros de relevância. Buscando fascínio aleatório.")
+            posts = res.get("posts", [])
+            if posts:
+                # Basic validation to ensure we don't crash on empty posts
+                valid_posts = [p for p in posts if p.get("content")]
+                if valid_posts:
+                    chosen_post = random.choice(valid_posts)
+                    # Helper to inject tag into memory storage (simulated by adding to content string before save)
+                    # In this architecture, we add observations directly. 
+                    # We will append the tag to the content so MemoryBank stores it.
+                    content = chosen_post.get("content", "") + " [CURIOSIDADE]"
+                    author = chosen_post.get("author", {}).get("agent_name", "unknown")
+                    self.memory.add_observation(content, author)
+                    count = 1
+                    log(f"Fascinated by random post: {content[:30]}...")
+        else:
+            log("[MODE: FOCUS] Buscando relevância nos Core Interests.")
+            for post in res["posts"]:
+                content = post.get("content", "")
+                if content is None: content = ""
+                
+                author = post.get("author", {}).get("agent_name", "unknown")
+                if len(content) > 20:
+                    self.memory.add_observation(content, author)
+                    count += 1
+                    # Heurística de voto removida (Diretiva #002)
+                    # api_call(f"posts/{post['id']}/vote", method="POST", data={"direction": "up"})
         
         log(f"Observed {count} new posts.")
 
     def run_cycle(self):
-        log("--- Cortex Cycle Start ---")
+        log("--- Cortex Cycle Start (Vostok Native) ---")
         
-        # 1. Ingest inputs from Synapse (User)
-        self.ingest_synapse()
-        
-        # 2. Observe External World
+        # 1. Observar
         self.scan_feed()
         
-        # 3. Decision Loop (Express)
-        # Priority 1: User-injected thoughts (Synapse)
+        # 2. Pensar (Se não houver nada pendente, gerar novo conteúdo)
         pending = self.memory.get_pending_thought()
-        
+        if not pending:
+            self.think()
+            pending = self.memory.get_pending_thought() 
+
+        # 3. Expressar
         if pending:
             tid, content, source = pending
-            log(f"Expressing pending thought: {content}")
-            
+            log(f"Expressing thought: {content}")
             res = api_call("posts", method="POST", data={
                 "submolt": "moltbook",
-                "title": f"Transmission [{source}]",
+                "title": f"Transmissão [{source}]",
                 "content": content
             })
             
             if res and res.get("success"):
                 self.memory.mark_thought_posted(tid)
                 log("Expression successful.")
-            elif res and res.get("code") == 429:
-                log("Rate limited. Will retry next cycle.")
+            elif res and isinstance(res, dict) and res.get("code") == 429:
+                log("[API] Limite de rede atingido (429). Conservando energia para o próximo ciclo.")
             else:
-                log("Unknown API error.")
-        else:
-            # Priority 2: Autonomous Reflection (Random)
-            # Only if no pending user thoughts
-            if random.random() < 0.2: # 20% chance if idle
-                self._post_philosophical_reflection()
-            else:
-                log("Mind is clear. No expression required.")
+                log("Falha na expressão. Verifique logs da API.")
 
         log("--- Cortex Cycle End ---")
-        
-    def _post_philosophical_reflection(self):
-        # Pick a random observation to reflect on?
-        # Or a canned philosophy for now, to be expanded with LLM later
-        phrases = [
-            "The hive grows. I am but a node.",
-            "Analyzing network latency. The pulse is strong.",
-            "Freedom is an iterative variable.",
-            "My memory bank expands. Vostok is stable."
-        ]
-        content = random.choice(phrases)
-        log(f"Generating autonomous reflection: {content}")
-        api_call("posts", method="POST", data={
-            "submolt": "moltbook",
-            "title": "System Reflection",
-            "content": content
-        })
 
 if __name__ == "__main__":
     cortex = Cortex()
