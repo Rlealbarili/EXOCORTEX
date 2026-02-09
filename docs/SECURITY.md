@@ -39,3 +39,10 @@
 2. enforce file permissions on key files (`chmod 600`).
 3. add outbound firewall rules restricted to required destinations.
 4. include regular backups for `memory.db`.
+
+## CI Enforcement
+
+- GitHub Actions workflow `/.github/workflows/secret-scan.yml` runs on every push/PR.
+- It executes:
+  - `./scripts/secret_scan.sh head`
+  - `./scripts/secret_scan.sh history`
