@@ -5,6 +5,15 @@
 - API keys must be provided by environment variables or local key files.
 - Key files (`gemini_key.txt`, `moltbook_key.txt`) are ignored by git.
 - Never log raw secrets or include them in issue reports.
+- Install repository hooks to block accidental secret commits:
+  ```bash
+  ./scripts/install_hooks.sh
+  ```
+- Run local secret scans before pushing:
+  ```bash
+  ./scripts/secret_scan.sh head
+  ./scripts/secret_scan.sh history
+  ```
 
 ## Network Safety
 

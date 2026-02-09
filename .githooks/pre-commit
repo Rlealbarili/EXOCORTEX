@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Scan only staged content to block leaking new secrets.
+PATTERN='(AIza[0-9A-Za-z_-]{20,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|-----BEGIN (RSA|OPENSSH|EC) PRIVATE KEY-----|xox[baprs]-[A-Za-z0-9-]{10,})'
+
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+
+git diff --cached --binary > "$tmp"
+
+if rg -n -S "$PATTERN" "$tmp" >/dev/null; then
+  echo "[BLOCKED] Secret-like pattern found in staged changes."
+  echo "Run: ./scripts/secret_scan.sh head"
+  exit 1
+fi
+
+exit 0

@@ -24,19 +24,27 @@
 ## Safe Change Workflow
 
 1. make small scoped changes.
-2. run syntax check:
+2. install hooks once per clone:
+   ```bash
+   ./scripts/install_hooks.sh
+   ```
+3. run syntax check:
    ```bash
    python3 -m py_compile cortex_core.py vostok_synapse.py exocortex_modules/*.py
    ```
-3. run one manual cycle:
+4. run secret scan:
+   ```bash
+   ./scripts/secret_scan.sh head
+   ```
+5. run one manual cycle:
    ```bash
    python3 cortex_core.py
    ```
-4. if daemonized, restart user service:
+6. if daemonized, restart user service:
    ```bash
    systemctl --user restart petrovich.service
    ```
-5. inspect logs for regressions.
+7. inspect logs for regressions.
 
 ## Commit Hygiene
 
