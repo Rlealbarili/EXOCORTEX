@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets
+gemini_key.txt
+moltbook_key.txt
+.env
+.env.*
+
+# Runtime / generated data
+*.log
+daemon.out
+cortex.log
+memory.db
+.vostok_daemon.lock
+nova_versao.txt
+synapse_inbox.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

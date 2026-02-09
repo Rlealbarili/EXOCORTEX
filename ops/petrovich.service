@@ -1,0 +1,20 @@
+[Unit]
+Description=Petrovich Exocortex Daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/vostok/exocortex
+ExecStart=/home/vostok/exocortex/vostok_daemon.sh
+Restart=always
+RestartSec=5
+Environment=SLEEP_SECONDS=1860
+Environment=CYCLE_TIMEOUT_SECONDS=300
+Environment=API_MAX_RETRIES=3
+Environment=API_RETRY_BASE_SECONDS=1.2
+Environment=API_TIMEOUT_SECONDS=12
+Environment=MOLTBOOK_DNS_FALLBACK_IPS=
+
+[Install]
+WantedBy=default.target
