@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -32,3 +33,38 @@ synapse_inbox.json
 Thumbs.db
 .idea/
 .vscode/
+=======
+# Secrets & Keys
+gemini_key.txt
+*.pem
+*.ppk
+*.key
+.env
+
+# Database & Logs
+*.db
+*.log
+*.sqlite
+logs/
+
+# System-specific
+__pycache__/
+*.pyc
+.DS_Store
+
+# User Data
+persona.backup.txt
+evolution_proposal.txt
+synapse_inbox.json
+
+# Local Utility & Test Scripts (Internal use)
+agent_heartbeat*.py
+check_*.py
+debug_*.py
+list_models.py
+moltbook_status_check.json
+register_agent.ps1
+remote_db_fix.py
+test_*.py
+cortex_core.py_new
+>>>>>>> b05da37ff9dd48aec37d8aac592a9ea594c07b52
