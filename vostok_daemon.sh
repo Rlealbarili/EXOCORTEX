@@ -1,5 +1,4 @@
 #!/bin/bash
-<<<<<<< HEAD
 set -u
 
 BASE_DIR="/home/vostok/exocortex"
@@ -33,17 +32,11 @@ if ! flock -n 9; then
   echo "[*] Daemon já está em execução (lock ativo em $LOCK_FILE)."
   exit 0
 fi
-=======
-# EXOCORTEX VOSTOK DAEMON
-# Interval: 35 Minutes (Chronological Sync)
-# SECURITY: API Key is loaded from external file (never committed to Git)
->>>>>>> b05da37ff9dd48aec37d8aac592a9ea594c07b52
 
 echo "[*] EXOCORTEX VOSTOK DAEMON STARTED"
 echo "[*] Standing by..."
 
 while true; do
-<<<<<<< HEAD
     echo
     echo "[$(date)] Waking up..."
 
@@ -69,13 +62,4 @@ while true; do
 
     echo "[Zzz] Sleeping for ${SLEEP_SECONDS}s..."
     sleep "$SLEEP_SECONDS"
-=======
-    echo ""
-    echo "[$(date)] Waking up..."
-    # Load API Key from external file (gemini_key.txt is in .gitignore)
-    export GEMINI_API_KEY=$(cat /home/vostok/exocortex/gemini_key.txt)
-    python3 /home/vostok/exocortex/cortex_core.py
-    echo "[Zzz] Sleeping for 35 minutes..."
-    sleep 2100
->>>>>>> b05da37ff9dd48aec37d8aac592a9ea594c07b52
 done

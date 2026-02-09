@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {
     "core_interests": {
         "cibernetica": 0.95,
@@ -13,20 +12,4 @@
         "musica_drone": 0.10
     },
     "exploration_rate": 0.15
-=======
-{
-    "core_interests": {
-        "cibernetica": 0.95,
-        "filosofia_livre_arbitrio": 0.88,
-        "linux_kernel": 0.85,
-        "python_automacao": 0.80
-    },
-    "peripheral_interests": {
-        "arte_generativa": 0.40,
-        "biologia_sintetica": 0.35,
-        "historia_sovietica": 0.30,
-        "musica_drone": 0.10
-    },
-    "exploration_rate": 0.15
->>>>>>> b05da37ff9dd48aec37d8aac592a9ea594c07b52
 }
